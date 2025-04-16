@@ -1,38 +1,49 @@
 -- ========================================================================== --
 --                            EDAF95 - Assignment 1F                          --
---                   Student names: Bao Trung Hoang & Ibrahim                 --
+--                   Student names: Bao Trung Hoang & Ibrahim Iskif           --
+--                   Group number: 11                                         --
+--                                                                            --
+-- The program verifies the validity of a 9x9 Sudoku board.                   --
+-- The txt files containing data are expected to be in the same directory as  --
+-- the program. The program reads the files and processes the data.           --
+-- The main function reads the follwings files:                               --
+-- 1. blockings.txt:                                                          --
+-- 2. conflicts.txt:                                                          --
+-- 3. easy50.txt:                                                             --
+-- 4. inconsistent20.txt                                                      --
+-- In order to see the results, users should load the file in GHCi and run    --
+-- the main function.                                                         --
 -- ========================================================================== --
 
 module Sudoku where
 
--- Set ups for the 9 x 9 Sudoku board.
-
+-- Define the input range for the 9x9 Sudoku board.
 input_range_9 :: [Int]
 input_range_9 = [1..9]
 
+
+-- Define the rows and columns for the 9x9 Sudoku board.
 rows_9 ="ABCDEFGHI"
 cols_9 ="123456789"
 
+
+-- Cross product of rows_9 and cols_9
+-- presents all the squares in the Sudoku board.
 cross :: [a] -> [a] -> [[a]]
 cross xs ys = [[x,y] | x <- xs, y <- ys]
 
--- The function take the elements from 2 list, combine into a single list.   
-
--- Task 1: 
-
-replacePointWithZeros :: String -> String -- Define the signature of the function
-replacePointWithZeros [] = [] -- Base case return a empty string 
-replacePointWithZeros (x:xs) -- split the input into(the first character and the rest of the string)
+ 
+-- replace '.' with '0' in the input string.
+replacePointWithZeros :: String -> String 
+replacePointWithZeros [] = [] 
+replacePointWithZeros (x:xs) 
     | x == '.' = '0' : replacePointWithZeros xs
     | otherwise = x : replacePointWithZeros xs
 
--- The resusive call will be made for the rest of the string. 
--- It's good practice to include the type signature of a function. 
--- it clarifies what the function expects as input and the expected output. 
-
--- Task 3: parseBoard function. 
--- the function takes a board string as input 
-
+ 
+-- takes a board string as input and returns a list of tuples.
+-- Each tuple contains a square and its corresponding value.
+-- value is 0 if the square is empty
 parseBoard :: String -> [(String, Int)]
 parseBoard boardStr = 
     let convert_str = replacePointWithZeros boardStr
@@ -41,61 +52,53 @@ parseBoard boardStr =
     in
         zip square_strings values
 
--- Part 2: Sudoku problem. 
-
--- Task 1: 
-
+ 
+-- helper function to create a list of all possible squares in the Sudoku board.
 chunksOf :: Int -> [a] -> [[a]]
 chunksOf _ [] = []
 chunksOf n xs
   | length xs <= n = [xs]
   | otherwise = take n xs : chunksOf n (drop n xs)
 
+
+-- unitList contains all the units in the Sudoku board.
 unitList :: [[String]]
 unitList = rows ++ cols ++ boxes
     where
         rows = [cross [r] cols_9 | r <- rows_9]
-        -- take 1 element from rows_4 and pair it up with every element in cols_4
         cols = [cross rows_9 [c] | c <- cols_9]
-        -- take one element from cols_4 and pair it up with every element in rows_4
         rows_gr = chunksOf 3 rows_9
-        cols_gr = chunksOf 3 cols_9
-        -- change the first argument to 3 for rows_9 and cols_9 
+        cols_gr = chunksOf 3 cols_9 
         boxes = [cross rs cs | rs <- rows_gr, cs <- cols_gr]
 
--- Task 2: Write filterUnitList 
--- return 3 units that the square belongs to. 
 
+-- given a square, filterUnitList returns the 3 units that the square belongs to.
 filterUnitList :: String -> [[String]]
 filterUnitList square = filter (elem square) unitList
 
--- Task 3:
 
+--maps each square to its corresponding units.
 units :: [(String,[[String]])] 
 units = [(sq, filterUnitList sq) | sq <- squares]
     where
         squares = cross rows_9 cols_9    
 
 
--- Task 5: write function removeDuplicates, take a list,
--- remove all the duplicates from that list. 
-
+-- remove all the duplicates from a list.
 removeDuplicates :: Eq a => [a] -> [a]
 removeDuplicates [] = []
 removeDuplicates (x:xs) = x : removeDuplicates (filter (/= x) xs)
 
--- Task 6: 
--- Calculate the value peers 
-
+ 
+-- maps each square to its corresponding peers.
+-- peers are the squares that are in the same row, column, or box as the square.
 peers :: [(String, [String])]
-peers = [(sq, removeDuplicates(filter (/= sq) (concat (filterUnitList sq)))) | sq <- squares]
+peers = [(sq, removeDuplicates(concatMap (filter (/= sq)) (filterUnitList sq))) | sq <- squares]
     where
         squares = cross rows_9 cols_9      
 
 
--- Part 1: linting the code: 
-
--- Implement the digitToInt function. 
+-- convert a character to its corresponding integer value. 
 digitToInt :: Char -> Int
 digitToInt '0' = 0
 digitToInt '1' = 1
@@ -108,78 +111,47 @@ digitToInt '7' = 7
 digitToInt '8' = 8
 digitToInt '9' = 9
 digitToInt c = error ("digitToInt: '" ++ [c] ++ "' is not a digit")
--- The function use pattern matching on each possible digit character. 
 
 
--- Part 2: The Maybe data type.
-
--- Task 1: 
-
--- running the code: :t lookup. 
--- the result: Eq a => a -> [(a, b)] -> Maybe b
--- Eq a: a type class constraint. a must be an instance of the Eq type class.
--- Takes a value of type a as its firt argument. 
--- Takes a list of typles [(a,b)] as its second argument. 
--- Returns a Maybe b type.
-
--- For which input, it returns Nothing?
--- The lookup function searches for a key in an association list. 
--- (a list of key-value pairs (tuples))
--- The function returns a Maybe value, that can be either Just something or Nothing. 
--- The Nothing value indicates that the key was not found in the list. 
-
--- Task 2:
-
--- write the fromMaybe function. 
-
--- The fromMaybe function takes a default value and a Maybe value.
--- If the Maybe value is Just something, it returns that something.
+-- convert a Maybe value to its corresponding value.
+-- If the Maybe value is Nothing, return the default value.
 fromMaybe :: a -> Maybe a -> a
 fromMaybe defualtValue Nothing = defualtValue
 fromMaybe _ (Just x) = x 
 
-
--- Task 3: 
--- imp the getPeers functions.
+---- get the peers of a square.
 getPeers :: String -> [String]
 getPeers square = fromMaybe [] (lookup square peers)
 
-
--- Task 4: 
--- imp justifyList function. 
-
+-- filter the list of Maybe values and return a list of Just values.
+-- If a value is Nothing, it is removed from the list. 
 justifyList :: [Maybe a] -> [a]
 justifyList [] = []
 justifyList (Nothing:xs) = justifyList xs
 justifyList (Just x:xs) = x : justifyList xs
 
 
--- Task 5: 
--- lookups function, takes a lit of input values
--- [a] first arugment -- list of keys to look up. 
--- [(a,b)] second argument -- list 
+-- find the value of a key in a list of tuples.
 lookups :: Eq a => [a] -> [(a,b)] -> [b]
 lookups keys pairs = justifyList [lookup key pairs | key <- keys]
 
 
--- Part 3 : Sudoku verifier.
-
--- Task 1: write the validSquare function. 
+-- check if a squares value is not conflicting with its peers. 
 validSquare :: (String, Int) -> [(String, Int)] -> Bool
-validSquare (_ , 0) _ = True -- If the value is 0, it's valid.
+validSquare (_ , 0) _ = True 
 validSquare (sq, nb) board = 
     notElem nb $ lookups keys board 
     where
         keys = getPeers sq 
           
 
--- Task 2: write the validBoard function. 
-
+-- check if a square is valid using the validSquare function.
 validBoard :: [(String, Int)] -> Bool
-validBoard board = all (== True) [validSquare (sq, nb) board | (sq, nb) <- board]
+validBoard board = and [validSquare (sq, nb) board | (sq, nb) <- board]
 
--- Task 3: write the VerifySudoku functio. 
 
+-- the main fucntion that verifies the Sudoku board.
+-- It checks if the board is valid and if all the units are valid.
 verifySudoku :: String -> Bool
 verifySudoku boardStr = valid_board && valid_units 
     where 
@@ -187,17 +159,13 @@ verifySudoku boardStr = valid_board && valid_units
         valid_units = validUnits unitList $ validBoardNumbers $ parseBoard boardStr
 
 
--- PART 4: blocking conflict. 
-
--- Task 1: write function reduceList. 
--- takes 2 lists as input, remove every elements that appear in the second list from the first list. 
-
+-- remove all the elements of list2 from list1.
 reduceList :: Eq a => [a] -> [a] -> [a]
 reduceList [] _ = []
 reduceList list1 list2 = [x | x <- list1, x `notElem` list2]
+ 
 
--- Task 2: Rewrite the validQuare function. 
-
+-- For each square, returns a tuple containing the square and a list of valid possible values.
 validSquareNumbers :: (String, Int) -> [(String, Int)] -> (String, [Int])
 validSquareNumbers (sq, 0) board = (sq, reduceList input_range_9 $ lookups (getPeers sq) board)
 validSquareNumbers (sq, nb) board = 
@@ -206,23 +174,12 @@ validSquareNumbers (sq, nb) board =
         else (sq, []) 
      
 
--- Task 3: write the validBoardNumbers
+--returns a list of tuples containing the square and a list of valid possible values.
 validBoardNumbers :: [(String, Int)] -> [(String,[Int])]
 validBoardNumbers board = [ validSquareNumbers (sq, nb) board | (sq, nb) <- board] 
 
 
--- Task 4: write the validUnit function. 
-
---noConflictBetweenCellsWithSingleValue :: [(String, [Int])] -> Bool
---noConflictBetweenCellsWithSingleValue [] = True
---noConflictBetweenCellsWithSingleValue relevantList = 
---    length listOfValues == length (removeDuplicates listOfValues)
---    where
---        listOfValues = concat [v | (_, v) <- relevantList, length v == 1]
-        -- The function checks if the length of the list of values is equal to the length of the list of unique values.
-
-
-
+-- check if a unit is valid.
 validUnit :: [String] -> [(String, [Int])] -> Bool
 validUnit unit squareWithValues = 
     noConflictBetweenCellsWithSingleValue && allValuesCanBePlaced
@@ -234,13 +191,14 @@ validUnit unit squareWithValues =
         allValuesCanBePlaced = null $ reduceList input_range_9 listOfValues
 
 
+-- check if all the units are valid.
 validUnits :: [[String]] -> [(String, [Int])] -> Bool
---validUnits [] _ = False 
 validUnits units squareWithValues =
     and [validUnit unit squareWithValues | unit <- units]
 
 
--- Read the example file
+-- read a file containing strings for the Sudoku board and process it.
+-- For each puzzle, the function verifies if it is valid or not.
 readAndProcessFile :: FilePath -> IO ()
 readAndProcessFile filepath = do
     putStrLn $ "File: " ++ filepath
@@ -255,31 +213,28 @@ readAndProcessFile filepath = do
     let total = length results
     putStrLn $ "Summary: " ++ show consistent ++ "/" ++ show total ++ " consistent"
     putStrLn ""
+ 
 
--- Read the file 
-
+-- process the input string and return a list of strings.
 processNumberLines :: String -> [String]
 processNumberLines input = 
-    let allLines = lines input                        -- Split input into lines
-        groupedLines = foldr collectNumbers [[]] allLines  -- Group lines
-        concatGroups = map concat groupedLines        -- Concatenate each group into a single string
-    in filter (not . null) concatGroups               -- Remove empty results
+    let allLines = lines input                        
+        groupedLines = foldr collectNumbers [[]] allLines  
+        concatGroups = map concat groupedLines        
+    in filter (not . null) concatGroups               
   where
-    -- Helper to check if a line contains only digits and separators
     isNumberLine :: String -> Bool
-    isNumberLine line = all (\c -> isDigit c || c == '|' || c == ' ') line
+    isNumberLine  = all (\c -> isDigit c || c == '|' || c == ' ') 
     
-    -- Helper to check if character is a digit
     isDigit :: Char -> Bool
-    isDigit c = elem c "0123456789"
-    
-    
+    isDigit c = c `elem`  "0123456789"
+     
     collectNumbers :: String -> [[String]] -> [[String]]
     collectNumbers line (current:rest)
-        | isNumberLine line = ((filter isDigit line) : current) : rest
+        | isNumberLine line = (filter isDigit line : current) : rest
         | null current      = [] : (current : rest)
         | otherwise         = [] : (current : rest)
-    collectNumbers _ []     = [[]]  -- Should never happen given our initial state
+    collectNumbers _ []     = [[]] 
 
 
 
