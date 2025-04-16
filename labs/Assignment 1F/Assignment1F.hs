@@ -7,9 +7,9 @@
 -- The txt files containing data are expected to be in the same directory as  --
 -- the program. The program reads the files and processes the data.           --
 -- The main function reads the follwings files:                               --
--- 1. blockings.txt:                                                          --
--- 2. conflicts.txt:                                                          --
--- 3. easy50.txt:                                                             --
+-- 1. blockings.txt                                                           --
+-- 2. conflicts.txt                                                           --
+-- 3. easy50.txt                                                              --
 -- 4. inconsistent20.txt                                                      --
 -- In order to see the results, users should load the file in GHCi and run    --
 -- the main function.                                                         --
@@ -207,9 +207,9 @@ readAndProcessFile filepath = do
     let results = zip [1..] (map verifySudoku puzzles)
     
     mapM_ (\(i, r) -> putStrLn $ "Puzzle #" ++ show i ++ ": " ++ 
-                                (if r then "CONSISTENT" else "INCONSISTENT")) results
+                                (if r then "valid" else "invalid")) results
     
-    let consistent = length $ filter snd results
+    let consistent = length $ filter id [v| (_,v) <- results]
     let total = length results
     putStrLn $ "Summary: " ++ show consistent ++ "/" ++ show total ++ " consistent"
     putStrLn ""
