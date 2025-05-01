@@ -270,18 +270,30 @@ giveMeNumber :: IO() = do
 
 printSudoku :: [(String, Int)] -> IO()
 printSudoku board = do
-    putStrLn "  123456789"
-    putStrLn " +-----------------+"
+    putStrLn "   1  2  3  4  5  6  7  8  9"
+    putStrLn " +---------------------------+"
     -- Create and print for each row. 
     mapM_ (\r -> do
+        --let first = True
         putStr $ [r] ++ "|"
         -- Create and print for each column.
         mapM_(\c -> do
             let sq = [r,c] 
-            putStr $ show $ fromJust $ lookup sq board
+            let val = fromJust $ lookup sq board
+            -- check for simple conflicts, conflicts between the square value and its peers.
+            let simpleConflict = validSquare (sq, val) board
+            -- check for blockings conflicts.
+            let blockingsConflict = validUnits (filterUnitList sq) $ validBoardNumbers board
+            -- add a marker if there is a conflict.
+            if simpleConflict && blockingsConflict
+                then putStr $  " " ++ show val ++ " " 
+                else putStr $ " " ++ show val ++ "!"
+                
+            --putStr $ show $ fromJust $ lookup sq board
             ) cols_9
         putStrLn "|"
         ) rows_9
+    putStrLn " +---------------------------+"
     where
         fromJust :: Maybe Int -> Int
         fromJust (Just x) = x
@@ -303,7 +315,9 @@ main = do
     -- A regular Sudoku puzzle with some filled cells
     let examplePuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
     let exampleBoard = parseBoard examplePuzzle
-    printSudoku exampleBoard
+    let blockings = "004000200000030002390700080400009001209801307600200008010008053900040000000000800"
+    let blockingsBoard = parseBoard blockings
+    printSudoku blockingsBoard
 
     
    
