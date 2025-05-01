@@ -266,9 +266,45 @@ giveMeNumber :: IO() = do
     using <- when extracting the result from an IO action, allowing to extract value from an IO context and use it as regular 
     value.
 -}
+-- Task 3: Print a Sudoku board
+
+printSudoku :: [(String, Int)] -> IO()
+printSudoku board = do
+    putStrLn "  123456789"
+    putStrLn " +-----------------+"
+    -- Create and print for each row. 
+    mapM_ (\r -> do
+        putStr $ [r] ++ "|"
+        -- Create and print for each column.
+        mapM_(\c -> do
+            let sq = [r,c] 
+            putStr $ show $ fromJust $ lookup sq board
+            ) cols_9
+        putStrLn "|"
+        ) rows_9
+    where
+        fromJust :: Maybe Int -> Int
+        fromJust (Just x) = x
+        fromJust Nothing = 0
+         
+{-
+    for a square, 
+        we can use the validSquare function to check for simple conflicts, conflicts between the square and its peers.
+        validSquare takes a tuple (square, value) and the board as input.
+        
+        use the validBoardNumbers function to get all the valid values for all squares.
+        use the filterUnitList function to get all 3 units that the square belongs to.
+        use the validUnits function to check all the units that the square belongs to and check if they all are valid.
+        validUnits takes units and the list of squares with their posible values as input.
+-}
+
 main :: IO ()
 main = do 
-    giveMeNumber
+    -- A regular Sudoku puzzle with some filled cells
+    let examplePuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+    let exampleBoard = parseBoard examplePuzzle
+    printSudoku exampleBoard
+
     
    
      
