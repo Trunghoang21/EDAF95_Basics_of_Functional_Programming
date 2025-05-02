@@ -1,5 +1,7 @@
 import System.IO
 import System.Environment (getArgs)
+import Sudoku
+
 
 processSudoku :: [String] -> [[String]]
 processSudoku [] = []
@@ -26,6 +28,13 @@ reformat (string : strings)  = replaceString string : reformat strings
             | x == '|' =  replaceString xs
             | otherwise = x : replaceString xs
 
+printResult :: [String] -> IO ()
+printResult puzzles = mapM_ (\puzzle -> do 
+    let isVaid = verifySudoku puzzle
+    printSudoku $ parseBoard puzzle
+    putStrLn $ "The puzzle is " ++ (if isVaid then "valid" else "invalid") 
+    )puzzles
+
 
 main :: IO ()
 main = do
@@ -40,4 +49,5 @@ main = do
     let linesContent = lines content -- lines function splits the content into lines.  
     -- lines :: String -> [String]
     let split = reformat $ flatten $ processSudoku linesContent
-    print split
+    
+    printResult split

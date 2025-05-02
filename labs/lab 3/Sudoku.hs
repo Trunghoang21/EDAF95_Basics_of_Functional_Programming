@@ -308,7 +308,6 @@ printSudoku board = do
         use the filterUnitList function to get all 3 units that the square belongs to.
         use the validUnits function to check all the units that the square belongs to and check if they all are valid.
         validUnits takes units and the list of squares with their posible values as input.
--}
 
 main :: IO ()
 main = do 
@@ -318,6 +317,9 @@ main = do
     let blockings = "004000200000030002390700080400009001209801307600200008010008053900040000000000800"
     let blockingsBoard = parseBoard blockings
     printSudoku blockingsBoard
+
+-}
+
 
     
    
