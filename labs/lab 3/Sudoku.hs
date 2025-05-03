@@ -285,9 +285,10 @@ printSudoku board = do
             -- check for blockings conflicts.
             let blockingsConflict = validUnits (filterUnitList sq) $ validBoardNumbers board
             -- add a marker if there is a conflict.
+            let displayVal = if val == 0 then "." else (show val)
             if simpleConflict && blockingsConflict
-                then putStr $  " " ++ show val ++ " " 
-                else putStr $ " " ++ show val ++ "!"
+                then putStr $  " " ++ displayVal ++ " " 
+                else putStr $ " " ++ displayVal ++ "!"
                 
             --putStr $ show $ fromJust $ lookup sq board
             ) cols_9
