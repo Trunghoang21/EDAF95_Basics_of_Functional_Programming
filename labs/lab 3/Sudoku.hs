@@ -197,45 +197,6 @@ validUnits units squareWithValues =
     and [validUnit unit squareWithValues | unit <- units]
 
 
--- read a file containing strings for the Sudoku board and process it.
--- For each puzzle, the function verifies if it is valid or not.
-readAndProcessFile :: FilePath -> IO ()
-readAndProcessFile filepath = do
-    putStrLn $ "File: " ++ filepath
-    content <- readFile filepath
-    let puzzles = processNumberLines content
-    let results = zip [1..] (map verifySudoku puzzles)
-    
-    mapM_ (\(i, r) -> putStrLn $ "Puzzle #" ++ show i ++ ": " ++ 
-                                (if r then "valid" else "invalid")) results
-    
-    let consistent = length $ filter id [v| (_,v) <- results]
-    let total = length results
-    putStrLn $ "Summary: " ++ show consistent ++ "/" ++ show total ++ " consistent"
-    putStrLn ""
- 
-
--- process the input string and return a list of strings.
-processNumberLines :: String -> [String]
-processNumberLines input = 
-    let allLines = lines input                        
-        groupedLines = foldr collectNumbers [[]] allLines  
-        concatGroups = map concat groupedLines        
-    in filter (not . null) concatGroups               
-  where
-    isNumberLine :: String -> Bool
-    isNumberLine  = all (\c -> isDigit c || c == '|' || c == ' ') 
-    
-    isDigit :: Char -> Bool
-    isDigit c = c `elem`  "0123456789"
-     
-    collectNumbers :: String -> [[String]] -> [[String]]
-    collectNumbers line (current:rest)
-        | isNumberLine line = (filter isDigit line : current) : rest
-        | null current      = [] : (current : rest)
-        | otherwise         = [] : (current : rest)
-    collectNumbers _ []     = [[]] 
-
 -- Laboration 3: 
 
 -- Preparatory execises: 
@@ -321,7 +282,33 @@ main = do
 
 -}
 
+{-
+    Task 2: reperatory exercise. 
 
+    The type signature of the function is: 
+    
+    readFile :: FilePath -> IO [String]
+
+    The functions takes a file path as input, typically a string, and returns the content of the file as string.
+
+    The following operations are perfomed: 
+        1. Open the specified file for reading. 
+        2. Read and load the content of the file into memory.
+        3. Close the file after reading. 
+        4. Return the content as string wraped inside the IO monad.
+
+    Why readFile need to be IO? 
+
+    Reading a file has side effect, while interacting with external world. In Haskell, this must be wrapped in 
+    the IO monad. 
+
+    The result of the function may change between calls, thus the same input was given.
+    The IO monad ensures that operations executed in a sequence order. 
+
+    The IO monad provides a context for handling side effects, such as reading non-existed files.
+
+
+-}
     
    
      
