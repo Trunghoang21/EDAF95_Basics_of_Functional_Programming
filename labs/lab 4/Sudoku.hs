@@ -271,44 +271,63 @@ printSudoku board = do
         use the validUnits function to check all the units that the square belongs to and check if they all are valid.
         validUnits takes units and the list of squares with their posible values as input.
 
-main :: IO ()
-main = do 
-    -- A regular Sudoku puzzle with some filled cells
-    let examplePuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
-    let exampleBoard = parseBoard examplePuzzle
-    let blockings = "004000200000030002390700080400009001209801307600200008010008053900040000000000800"
-    let blockingsBoard = parseBoard blockings
-    printSudoku blockingsBoard
-
 -}
+
+-- Laboration 4: Solve the Sudoku board. 
+
+-- Preparatory exercises: 
+
+-- given definitions
+
+type BoardProb = [(String, [Int])] -- contains all the potential values for a square. 
+
+allDigits :: [Int]
+allDigits = [1,2,3,4,5,6,7,8,9]
+
+infAllDigits = repeat allDigits
+
+emptyBoard = zip squares infAllDigits
+
+parseSquare :: (String, Char ) -> BoardProb -> Maybe BoardProb
+parseSquare (s, x) values
+    | x == '.' || x == '0' = return values
+    |isDigit x = assign (digitToInt x) s values
+    | otherwise = fail "not a valid grid"
+
+parseBoard :: String -> Maybe BoardProb
+parseBoard = foldr ((=<<) . parseSquare) (Just emptyBoard) . zip squares 
+{-
+    type BoardProb is a type synonym (not a new type)
+    Haskell use type synonyms as a alternative for creating name for existing types,
+    which makes the code more readable and understandable. 
+
+    The compiler will treat the type synonym as the orgrinal type.
+
+    infAllDigits is an infinite list of all digits, created by using the repeat function.
+    each element is allDigits. 
+
+    the infAllDigits is used to create a empty board, where every square can potentially take any digit from 1 to 9.         
+-}
+
+-- implement helper functions. 
+
+map2 :: (c -> c, b -> d) -> (a, b) -> (c, d)
+map2 (f, g) (x, y) = (f x, g y)
 
 {-
-    Task 2: reperatory exercise. 
-
-    The type signature of the function is: 
-    
-    readFile :: FilePath -> IO [String]
-
-    The functions takes a file path as input, typically a string, and returns the content of the file as string.
-
-    The following operations are perfomed: 
-        1. Open the specified file for reading. 
-        2. Read and load the content of the file into memory.
-        3. Close the file after reading. 
-        4. Return the content as string wraped inside the IO monad.
-
-    Why readFile need to be IO? 
-
-    Reading a file has side effect, while interacting with external world. In Haskell, this must be wrapped in 
-    the IO monad. 
-
-    The result of the function may change between calls, thus the same input was given.
-    The IO monad ensures that operations executed in a sequence order. 
-
-    The IO monad provides a context for handling side effects, such as reading non-existed files.
-
-
+    map2 functions takes 2 functions and a tuple as input.
+    apply the functions to the elements of the tuple and return a new tuple of results. 
 -}
-    
-   
-     
+
+mapIf :: (a -> a) -> (a -> Bool) -> [a] -> [a]
+mapIf _ _ [] = []
+mapIf f p xs = [if p x then f x else x | x <- xs]
+
+{-
+    mapIf function takes a function, a predicate and a list of elements as input. 
+    for each element in the list, if the predicate is true, apply the function to the element. 
+    Otherwise, behold the element as it is. 
+-}
+
+maybeOr :: Maybe a -> Maybe a -> Maybe a'
+
