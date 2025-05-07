@@ -276,8 +276,6 @@ eliminate value square board
             vals = lookupList square re 
             
             
-
-
 assign :: Int -> String -> BoardProb -> Maybe BoardProb
 assign digit square board =
     let newBoard = setValue digit square board -- set the value of the square to the given digit.
@@ -291,7 +289,15 @@ assign' val (x:xs) board =
 
 -- Part 3: Sovle the Sudoku board.
 
+solveSudoku' :: [String] -> BoardProb -> Maybe BoardProb
+solveSudoku' [] board = Just board -- base case: when the operation is done. 
+solveSudoku' (x:xs) board = firstJust [ assign v x board `maybeBind` solveSudoku' xs | v <- lookupList x board] 
 
+
+solveSudoku :: String -> Maybe BoardProb
+solveSudoku boardStr = 
+    let board = parseBoard boardStr
+    in solveSudoku' squares $ fromMaybe [] board
 
 main :: IO ()
 main = do 
@@ -307,7 +313,8 @@ main = do
               ++ "....8..79"
     
     -- Print the result of parsing the board
-    print $ parseBoard board
+    print $ solveSudoku board
+     
 
 
 
