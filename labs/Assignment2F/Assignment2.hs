@@ -249,15 +249,15 @@ recursiveReplacement (x:xs) (y:ys) zs =
         Nothing -> Nothing -- recursiveReplacement 3nd arg: [a]
         Just newList -> recursiveReplacement xs ys newList -- the recursive call. 
 
--- Part 2: The assign function. 
+ 
 
--- imp setValue function. 
+-- set Value to a square in the BoardProb 
 setValue :: Int -> String -> BoardProb -> BoardProb
 setValue value square board =
     mapIf transform predicate board
     where 
-        transform(sq, v) = (sq, [value]) -- function: create the new tuple 
-        predicate (sq, v) = sq == square -- predicate: check if the checking square is equal to the given string. 
+        transform(sq, v) = (sq, [value])  
+        predicate (sq, v) = sq == square  
 
 
 -- imp eliminate function.
@@ -265,79 +265,59 @@ eliminateValue :: Int -> String -> BoardProb -> BoardProb
 eliminateValue value square board =
     mapIf transform predicate board
     where
-        transform (sq, v) = (sq, filter (/= value) v) -- function: create the new tuple, filter out the given value from the list. 
-        predicate (sq, v) = sq == square -- predicate: check if the checking square is equal to the given string.
+        transform (sq, v) = (sq, filter (/= value) v)  
+        predicate (sq, v) = sq == square 
 
-
+-- eliminate a value from the list of possible values for a square
 eliminate :: Int -> String -> BoardProb -> Maybe BoardProb
 eliminate value square board 
-    | null vals = Nothing -- check if the ressulting list is empty.
+    | null vals = Nothing 
     | otherwise = Just re
         where
-            re = eliminateValue value square board -- check if the square is in the board.
+            re = eliminateValue value square board 
             vals = lookupList square re 
             
-            
+-- assign a value to a square in the board.            
 assign :: Int -> String -> BoardProb -> Maybe BoardProb
 assign digit square board =
-    let newBoard = setValue digit square board -- set the value of the square to the given digit.
-        peersList = getPeers square -- get the peers of the square
-    in assign' digit peersList newBoard -- call the assign' function with the new board and the peers of the square. 
+    let newBoard = setValue digit square board 
+        peersList = getPeers square 
+    in assign' digit peersList newBoard  
 
+-- eliminate a value from peers of a square when the value is assigned to the square using the assign function.
 assign' :: Int -> [String] -> BoardProb -> Maybe BoardProb
-assign' _ [] board = Just board -- base case: when the operaetion is done. 
+assign' _ [] board = Just board  
 assign' val (x:xs) board = 
-    eliminate val x board `maybeBind` assign' val xs -- the recursive call.  
+    eliminate val x board `maybeBind` assign' val xs   
 
--- Part 3: Sovle the Sudoku board.
-
+-- solve the Sudoku board.
 solveSudoku' :: [String] -> BoardProb -> Maybe BoardProb
 solveSudoku' [] board = Just board -- base case: when the operation is done. 
 solveSudoku' (x:xs) board = firstJust [ assign v x board `maybeBind` solveSudoku' xs | v <- lookupList x board] 
 
-
+-- take a string as input and return a Maybe BoardProb.
 solveSudoku :: String -> Maybe BoardProb
 solveSudoku boardStr = 
     let board = parseBoard boardStr
     in solveSudoku' squares $ fromMaybe [] board
 
 
-
--- Read the input file. 
-
-
+-- helper function used when processing the input file. 
+-- remove the separator line from the input file.
+-- The function takes a list of strings as input and returns a list of strings.
 processSudoku :: [String] -> [[String]]
 processSudoku [] = []
 processSudoku xs = 
     let (before, after) = break (== "========") xs
         in  before : processSudoku (drop 1 after)
-{-
-    by changing the returned value of the function, we could remove the separator line from the result.
-    from [String] -> [String] to [String] -> [[String]]
-    Each element of the sublist will represent a sudoku board line.
 
-    the break function is used to split the list into 2 parts: it takes place when the condition is met. 
-    before varibale stores the first part of the list before the separator line. The after variable stores lines from the 
-    separator line to the end of the list. 
-
-    The drop function is used to remove the element at the given index from the list. 
-    int -> [a] -> [a]
-    The drop function is used to remove the first element, which is the separator line from the after list. 
-    The resulting list is passed to the processSudoku function recursively.
-
-    : operator is used to append the element to the front of the list. 
-    base case of the recurssion is when the input list is empty. The element is added in the revserse order.   
--}
+-- helper function used to flatten a list of strings into a single string
 flatten :: [[String]] -> [String]
 flatten [] = []
 flatten list = [concat sublist | sublist <- list]
 
-{- 
-    flatten functions takes a list of sublists. Each sublist is a sudoku board containing 9 lines. 
-    concat function is used to join the elements of the sublist into a single string. 
-    concat: [[a]] -> [a]
--}
-
+-- helper function used to reformat the string input
+-- replace the '.' character with '0' and remove the '|' character from the string.
 reformat :: [String] -> [String]
 reformat [] = []
 reformat (string : strings)  = replaceString string : reformat strings
@@ -349,14 +329,8 @@ reformat (string : strings)  = replaceString string : reformat strings
             | x == '|' =  replaceString xs
             | otherwise = x : replaceString xs
 
-{-
-    refomat function takes a list of strings and reformats each string. 
-    The function replace the '.' character with '0' and removes the '|' character from the string.
 
-    the local function replaceStrig is defined inside of the reformat function. 
-    The function is applied to each element of the list. 
--}
-
+-- print the sudoku board.
 printBoard :: [(String, Int)] -> IO()
 printBoard board = do
     putStrLn "   1  2  3  4  5  6  7  8  9"
@@ -380,6 +354,7 @@ printBoard board = do
         fromJust (Just x) = x
         fromJust Nothing = 0
 
+-- helper function used to convert BoardProb into [(String, Int)].
 convertToFinalBoard :: BoardProb -> [(String, Int)]
 convertToFinalBoard board = 
     map (\(sq, v) -> (sq, convert v)) board
@@ -387,52 +362,12 @@ convertToFinalBoard board =
         convert [v] = v
         convert _ = 0
 
+-- helper function used to convert a board of type [(String, Int)] into a string.
 fromBoardToString :: [(String, Int)] -> String
 fromBoardToString board = 
     concat [show v | (_, v) <- board]
-
--- not used function : to be deleted. 
-printSolution :: Maybe BoardProb -> IO ()
-printSolution Nothing = putStrLn "There are no solution to this sudoku!"
-printSolution (Just board) = do
-    putStrLn "Here is the solution: "
-    putStrLn "   1  2  3  4  5  6  7  8  9"
-    putStrLn " +---------------------------+"
-    -- Create and print for each row. 
-    mapM_ (\r -> do
-        --let first = True
-        putStr $ [r] ++ "|"
-        -- Create and print for each column.
-        mapM_(\c -> do
-
-            let sq = [r,c] 
-            let val = fromJust $ lookup sq board
-            let displayVal = if val == 0 then "." else (show val)
-            putStr $  " " ++ displayVal ++ " "
-            ) cols_9
-        putStrLn "|"
-        ) rows_9
-    putStrLn " +---------------------------+"
-    where
-        fromJust :: Maybe [Int] -> Int
-        fromJust (Just [x]) = x
-        fromJust Nothing = 0 
         
--- not used function : to be deleted.
-printResult :: [String] -> IO ()
-printResult puzzles = mapM_ (\puzzle -> do 
-    printBoard $ parseBoard_ puzzle
-    putStrLn ""
-    putStrLn ""
-    let result = solveSudoku puzzle
-    case result of 
-        Nothing -> putStrLn "There is no solution to this sudoku!"
-        Just board -> do
-            printBoard $ convertToFinalBoard board
-            putStrLn ""
-            putStrLn ""
-    ) puzzles
-
+-- solve the current sudoku puzzle presented to the user.
 solveOnePuzzle :: String -> IO ()
 solveOnePuzzle current = do
     let result = solveSudoku current
@@ -446,6 +381,7 @@ solveOnePuzzle current = do
             putStrLn ""
             putStrLn ""
 
+-- solve all the sudoku puzzles from the given list.
 solveAllPuzzles :: [String] -> IO ()
 solveAllPuzzles [] = return ()
 solveAllPuzzles (current : rest) = do
@@ -465,14 +401,15 @@ solveAllPuzzles (current : rest) = do
             putStrLn ""
     solveAllPuzzles rest
 
--- helper function to check if all the squares are filled with values. 
+-- helper function used when the user wants to assign a value to a square.
+-- check if the sudoku board is solved or not. 
 isSolved :: String -> Bool
 isSolved [] = True
 isSolved (x:xs)
     | x == '0' = False
     | otherwise = isSolved xs
 
--- helper function to check the input of the user. 
+-- helper function used to check the input from user is valid.
 checkInput :: String -> String -> Bool
 checkInput square value = 
     let validSquare = square `elem` squares
@@ -485,13 +422,13 @@ checkInput square value =
                 [(v, "")] -> v `elem` input_range_9
                 _ -> False
 
--- function for updating the sudoku board with the user input. 
+-- helper function used to update the value of a square in the board. 
 updateSquareValue :: String -> Int -> [(String, Int)] -> [(String, Int)]
 updateSquareValue square value board = 
     let newBoard = map (\(sq, v) -> if sq == square then (sq, value) else (sq, v)) board
     in newBoard
 
--- ask the user for inputs.
+-- handle the user input for assigning a value to a square. 
 userSolve :: [String] -> IO ()
 userSolve [] = return ()
 userSolve (current:rest) = do
@@ -529,7 +466,7 @@ userSolve (current:rest) = do
                             putStrLn "The sudoku board is not solved yet."
                             interactiveLoop (newBoardStr: rest)
 
-
+-- print out the instructions for the user.
 giveInstructions :: IO ()
 giveInstructions = do
     putStrLn "Please choose the following options: "
@@ -539,6 +476,7 @@ giveInstructions = do
     putStrLn "type q to quit the program."
     putStrLn "Please enter your choice: "
 
+-- interactive loop for the user to choose the options for solving the sudoku board. 
 interactiveLoop ::[String] -> IO ()
 interactiveLoop [] = do
     putStrLn "There are no more sudoku boards to solve."
@@ -576,5 +514,5 @@ main = do
     fileName <- getLine
     contents <- readFile fileName
     let puzzles = reformat $ flatten $ processSudoku (lines contents)
-
+    -- begins the interactive loop with the list of sudoku boards. 
     interactiveLoop puzzles
