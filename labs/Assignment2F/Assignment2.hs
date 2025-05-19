@@ -8,9 +8,9 @@
 -- The program reads the file and processes the data.                         --
 -- Instructions:                                                              --
 -- 1. Load the file inside GHCi.                                              --
--- 2. run the main method                                                     --
--- 3. input the name of the input file                                        --
--- 4. follows the printed instructions                                        --
+-- 2. run the main method.                                                     --
+-- 3. input the name of the input file.                                        --
+-- 4. follows the printed instructions.                                        --
 -- ========================================================================== --
  
 import Data.Char (isDigit)
@@ -30,7 +30,7 @@ cross xs ys = [[x,y] | x <- xs, y <- ys]
 squares :: [String]
 squares = cross rows_9 cols_9
 
--- the function take a string as input and return the presentation of a sudoku board in form of [(String, Int)]
+-- the function take a string as input and return the presentation of a sudoku board in form of [(String, Int)].
 parseBoard_ :: String -> [(String, Int)]
 parseBoard_ boardStr = 
     zip squares $ map digitToInt boardStr
@@ -106,10 +106,10 @@ fromMaybe _ (Just x) = x
 getPeers :: String -> [String]
 getPeers square = fromMaybe [] (lookup square peers)
 
--- given definitions
+-- given definition.
 type BoardProb = [(String, [Int])] 
 
--- given definitions
+-- given definition.
 allDigits :: [Int]
 allDigits = [1,2,3,4,5,6,7,8,9]
 
@@ -158,7 +158,7 @@ setValue value square board =
         predicate (sq, v) = sq == square  
 
 
--- imp eliminate function.
+-- eliminate function.
 eliminateValue :: Int -> String -> BoardProb -> BoardProb
 eliminateValue value square board =
     mapIf transform predicate board
@@ -209,12 +209,12 @@ processSudoku xs =
     let (before, after) = break (== "========") xs
         in  before : processSudoku (drop 1 after)
 
--- helper function used to flatten a list of strings into a single string
+-- helper function used to flatten a list of strings into a single string.
 flatten :: [[String]] -> [String]
 flatten [] = []
 flatten list = [concat sublist | sublist <- list]
 
--- helper function used to reformat the string input
+-- helper function used to reformat the string input.
 -- replace the '.' character with '0' and remove the '|' character from the string.
 reformat :: [String] -> [String]
 reformat [] = []
@@ -414,7 +414,6 @@ interactiveLoop (current : rest) = do
             putStrLn "assign a value to a square."
             putStrLn ""
             userSolve (current : rest)
-            --interactiveLoop rest
 
         _ -> do
             putStrLn ""
