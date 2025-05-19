@@ -465,6 +465,32 @@ solveAllPuzzles (current : rest) = do
             putStrLn ""
     solveAllPuzzles rest
 
+-- helper function to check if all the squares are filled with values. 
+isSolved :: String -> Bool
+isSolved [] = True
+isSolved (x:xs)
+    | x == '0' = False
+    | otherwise = isSolved xs
+
+-- helper function to check the input of the user. 
+checkInput :: String -> String -> Bool
+checkInput square value = 
+    let validSquare = square `elem` squares
+        validValue = validIntValue value  
+    in validSquare && validValue
+    where
+        validIntValue :: String -> Bool
+        validIntValue value = 
+            case reads value of 
+                [(v, "")] -> v `elem` input_range_9
+                _ -> False
+
+-- function for updating the sudoku board with the user input. 
+updateSquareValue :: String -> Int -> [(String, Int)] -> [(String, Int)]
+updateSquareValue square value board = 
+    let newBoard = map (\(sq, v) -> if sq == square then (sq, value) else (sq, v)) board
+    in newBoard
+
 -- ask the user for inputs.
 userSolve :: [String] -> IO ()
 userSolve [] = return ()
@@ -473,16 +499,35 @@ userSolve (current:rest) = do
     square <- getLine
     putStrLn "The value you want to assign: "
     value <- getLine
-    let result = parseBoard current `maybeBind` assign (read value) square
-    case result of
-        Nothing -> do 
-            putStrLn "There is no solution to this sudoku!"
-            putStrLn ""
-            putStrLn ""
-        Just board -> do
-            let newBoardStr = fromBoardToString $ convertToFinalBoard board
-            interactiveLoop (newBoardStr: rest)
-    
+    let isValidInputs = checkInput square value
+    case isValidInputs of
+        False -> do
+            putStrLn "The input is not valid. Please try again."
+            putStrLn""
+            userSolve (current:rest)
+        True -> do
+            putStrLn "The input is valid."
+            putStrLn""
+            let result = parseBoard current `maybeBind` assign (read value) square
+            case result of
+                Nothing -> do 
+                    putStrLn "There is no solution to this sudoku!"
+                    putStrLn "The next sudoku board will be presented"
+                    putStrLn ""
+                    interactiveLoop rest
+                Just board -> do
+                    let newBoardStr = fromBoardToString $ updateSquareValue square (read value) (parseBoard_ current)
+                    let isSolvedBoard = isSolved newBoardStr
+                    case isSolvedBoard of
+                        True -> do
+                            putStrLn "The sudoku board is solved!"
+                            putStrLn "Here is the final solution:"
+                            printBoard $ convertToFinalBoard board
+                            putStrLn ""
+                            interactiveLoop rest
+                        False -> do
+                            putStrLn "The sudoku board is not solved yet."
+                            interactiveLoop (newBoardStr: rest)
 
 
 giveInstructions :: IO ()
@@ -521,7 +566,7 @@ interactiveLoop (current : rest) = do
             userSolve (current : rest)
             --interactiveLoop rest
 
-        "q" -> do
+        _ -> do
             putStrLn "quit the program."
 
 
