@@ -17,21 +17,10 @@ cross :: [a] -> [a] -> [[a]]
 cross xs ys = [[x,y] | x <- xs, y <- ys]
 
  
--- replace '.' with '0' in the input string.
-replacePointWithZeros :: String -> String 
-replacePointWithZeros [] = [] 
-replacePointWithZeros (x:xs) 
-    | x == '.' = '0' : replacePointWithZeros xs
-    | otherwise = x : replacePointWithZeros xs
-
- 
--- takes a board string as input and returns a list of tuples.
--- Each tuple contains a square and its corresponding value.
--- value is 0 if the square is empty
-
 squares :: [String]
 squares = cross rows_9 cols_9
 
+-- the function take a string as input and return the presentation of a sudoku board in form of [(String, Int)]
 parseBoard_ :: String -> [(String, Int)]
 parseBoard_ boardStr = 
     zip squares $ map digitToInt boardStr
@@ -115,18 +104,11 @@ justifyList (Nothing:xs) = justifyList xs
 justifyList (Just x:xs) = x : justifyList xs
 
 
--- find the value of a key in a list of tuples.
-lookups :: Eq a => [a] -> [(a,b)] -> [b]
-lookups keys pairs = justifyList [lookup key pairs | key <- keys]
-
-
-
--- Preparatory exercises: 
 
 -- given definitions
+type BoardProb = [(String, [Int])] 
 
-type BoardProb = [(String, [Int])] -- contains all the potential values for a square. 
-
+-- given definitions
 allDigits :: [Int]
 allDigits = [1,2,3,4,5,6,7,8,9]
 
@@ -140,116 +122,31 @@ parseSquare (s, x) values
     |isDigit x = assign (digitToInt x) s values
     | otherwise = fail "not a valid grid"
 
+-- given function to parse the input string into a BoardProb.
 parseBoard :: String -> Maybe BoardProb
 parseBoard = foldr ((=<<) . parseSquare) (Just emptyBoard) . zip squares 
-{-
-    type BoardProb is a type synonym (not a new type)
-    Haskell use type synonyms as a alternative for creating name for existing types,
-    which makes the code more readable and understandable. 
-
-    The compiler will treat the type synonym as the orgrinal type.
-
-    infAllDigits is an infinite list of all digits, created by using the repeat function.
-    each element is allDigits. 
-
-    the infAllDigits is used to create a empty board, where every square can potentially take any digit from 1 to 9.         
--}
-
--- implement helper functions. 
-
-map2 :: (a -> c, b -> d) -> (a, b) -> (c, d)
-map2 (f, g) (x, y) = (f x, g y)
-
-{-
-    map2 functions takes 2 functions and a tuple as input.
-    apply the functions to the elements of the tuple and return a new tuple of results. 
--}
 
 mapIf :: (a -> a) -> (a -> Bool) -> [a] -> [a]
 mapIf _ _ [] = []
 mapIf f p xs = [if p x then f x else x | x <- xs]
 
-{-
-    mapIf function takes a function, a predicate and a list of elements as input. 
-    for each element in the list, if the predicate is true, apply the function to the element. 
-    Otherwise, behold the element as it is. 
--}
-
-maybeOr :: Maybe a -> Maybe a -> Maybe a
-maybeOr Nothing y = y
-maybeOr (Just x) _ = Just x
-{-
-    takes two Maybe values as input. 
-    returns the second value if the first is Nothing,
-    otherwise returns the first value.
--}
-
+-- helper function used to find the first Just value in a list of Maybe values.
 firstJust :: [Maybe a] -> Maybe a
 firstJust [] = Nothing
 firstJust (Just x: _) = Just x
 firstJust (Nothing : xs) = firstJust xs
 
-{-
-    takes a list of Maybe values as input. 
-    returns the first Just value in the list, or Nothing if there are no Just values.
--}
-
+-- helper function to lookup a value in a list of tuples.
 lookupList :: Eq a => a -> [(a, [b])] -> [b]
 lookupList _ [] = []
 lookupList x ((y, ys): xs)
     | x == y = ys
     | otherwise = lookupList x xs
     
-{-
-    The function takes a comparable value and a list of tuples as input. 
-    if the first element of the tuple is equal to the comparable value.
-    the function returns the second element of the tuple, whic is a list of values.    
--}
-
--- Part 1: Implement with bind 
-
+-- Bind function for Maybe type.
 maybeBind :: Maybe a -> (a -> Maybe b) -> Maybe b
 maybeBind Nothing _ = Nothing
 maybeBind (Just x) f = f x 
-
-{-
-    the function takes a Maybe value and a function as input. 
-    If the Maybevalue is Nothing, it returns Nothing. 
-    Otherwise, it applies the function to the value inside the given Maybe value. 
--}
-
--- Task 2: 
-
-tryReplace :: Eq a => a -> a -> [a] -> Maybe [a]
-tryReplace _ _ [] = Nothing
-tryReplace y y' (x:xs)
-    | x == y = Just (y':xs)
-    | otherwise = fmap (x:) $ tryReplace y y' xs
-
-{-
-    The functions takes 3 input, the value to be replaced, the new value and a list. 
-    The function returns Nothing if the list is empty or it can not find the value to be replaced. 
-    The function returns a new list, when the value is found.
-
-    fmap function is used to preserve the structure of the list. 
-    Nothing is returned if the value is not found. 
-    If just value is returned, the function adds the first element to the front of the list recursively.     
--}
-
--- Task 3: Write function. 
-
-recursiveReplacement :: Eq a => [a] -> [a] -> [a] -> Maybe [a]
-recursiveReplacement [] [] zs = Just zs -- base case: when the operation is done. 
-recursiveReplacement _ _ [] = Nothing -- handle when the list is emtpy 
-recursiveReplacement [] _ _ = Nothing -- handle missmatch case 
-recursiveReplacement _ [] _ = Nothing -- handle missmatch case
-recursiveReplacement (x:xs) (y:ys) zs =
-    let newList = tryReplace x y zs -- maybeBind 1st arg : maybe [a]
-    in case newList of 
-        Nothing -> Nothing -- recursiveReplacement 3nd arg: [a]
-        Just newList -> recursiveReplacement xs ys newList -- the recursive call. 
-
- 
 
 -- set Value to a square in the BoardProb 
 setValue :: Int -> String -> BoardProb -> BoardProb
