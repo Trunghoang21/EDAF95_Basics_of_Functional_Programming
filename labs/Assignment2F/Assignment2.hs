@@ -4,8 +4,8 @@
 --                   Group number: 11                                         --
 --                                                                            --
 -- The program verifies the validity and solves a 9x9 Sudoku board.           --
--- The input file should be placed in the same directory as the program file  --
--- The program reads the files and processes the data.                        --
+-- The input file should be placed in the same directory as the program file. --
+-- The program reads the file and processes the data.                         --
 -- Instructions:                                                              --
 -- 1. Load the file inside GHCi.                                              --
 -- 2. run the main method                                                     --
