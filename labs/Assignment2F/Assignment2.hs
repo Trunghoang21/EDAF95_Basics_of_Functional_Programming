@@ -1,8 +1,18 @@
--- Sudoku solver
--- Author: Bao Trung Hoang 
--- Instructions for the solution: 
-
--- Laboration 4: Solve the Sudoku board. 
+-- ========================================================================== --
+--                            EDAF95 - Assignment 2F                          --
+--                   Student names: Bao Trung Hoang & Ibrahim Iskif           --
+--                   Group number: 11                                         --
+--                                                                            --
+-- The program verifies the validity and solves a 9x9 Sudoku board.           --
+-- The input file should be placed in the same directory as the program file  --
+-- The program reads the files and processes the data.                        --
+-- Instructions:                                                              --
+-- 1. Load the file inside GHCi.                                              --
+-- 2. run the main method                                                     --
+-- 3. input the name of the input file                                        --
+-- 4. follows the printed instructions                                        --
+-- ========================================================================== --
+ 
 import Data.Char (isDigit)
 import System.IO
 -- Define the input range for the 9x9 Sudoku board.
@@ -95,15 +105,6 @@ fromMaybe _ (Just x) = x
 ---- get the peers of a square.
 getPeers :: String -> [String]
 getPeers square = fromMaybe [] (lookup square peers)
-
--- filter the list of Maybe values and return a list of Just values.
--- If a value is Nothing, it is removed from the list. 
-justifyList :: [Maybe a] -> [a]
-justifyList [] = []
-justifyList (Nothing:xs) = justifyList xs
-justifyList (Just x:xs) = x : justifyList xs
-
-
 
 -- given definitions
 type BoardProb = [(String, [Int])] 
@@ -274,13 +275,19 @@ solveOnePuzzle current = do
             putStrLn ""
             putStrLn ""
         Just board -> do
+            putStrLn "Here is the final solution:"
+            putStrLn ""
             printBoard $ convertToFinalBoard board
             putStrLn ""
             putStrLn ""
 
 -- solve all the sudoku puzzles from the given list.
 solveAllPuzzles :: [String] -> IO ()
-solveAllPuzzles [] = return ()
+solveAllPuzzles [] = do
+    putStrLn ""
+    putStrLn "There are no more sudoku boards to solve."
+    putStrLn "Thank you for using the program!"
+    putStrLn ""
 solveAllPuzzles (current : rest) = do
     putStrLn "The current sudoku board: "
     printBoard $ parseBoard_ current
@@ -293,6 +300,8 @@ solveAllPuzzles (current : rest) = do
             putStrLn ""
             putStrLn ""
         Just board -> do
+            putStrLn "Here is the final solution:"
+            putStrLn ""
             printBoard $ convertToFinalBoard board
             putStrLn ""
             putStrLn ""
@@ -387,24 +396,33 @@ interactiveLoop (current : rest) = do
     choice <- getLine
     case choice of
         "s" -> do
+            putStrLn ""
             putStrLn "solve the current sudoku board."
+            putStrLn ""
             solveOnePuzzle current
             interactiveLoop rest
 
         "a" -> do
+            putStrLn ""
             putStrLn "solve all the remaining sudoku boards."
+            putStrLn ""
             solveOnePuzzle current
             solveAllPuzzles rest
 
         "i" -> do
+            putStrLn ""
             putStrLn "assign a value to a square."
+            putStrLn ""
             userSolve (current : rest)
             --interactiveLoop rest
 
         _ -> do
+            putStrLn ""
             putStrLn "quit the program."
+            putStrLn "thank you for using the program!"
+            putStrLn ""
 
-
+-- main function to run the program.
 main :: IO ()
 main = do
     putStrLn "Please enter the file name: "
